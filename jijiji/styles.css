@@ -1,0 +1,1063 @@
+/* ==========================================================================
+   TROPICAL GRILL - CONTROL DE SALARIOS
+   Estilos CSS Principales (Vanilla CSS - Sin Dependencias Externas)
+   ========================================================================== */
+
+/* 1. VARIABLES Y REGLAS DE DISEÑO */
+:root {
+    --primary-orange: #ff6b00;
+    --primary-orange-dark: #e65100;
+    --primary-orange-light: #ff8c00;
+    --secondary-yellow: #ffb300;
+    --yellow-light: #fff8e1;
+    --dark-bg: #1f1e1c;
+    --dark-surface: #2a2825;
+    --text-dark: #232220;
+    --text-muted: #666059;
+    --bg-cream: #fffcf7;
+    --white: #ffffff;
+    --green-tropical: #2e7d32;
+    --green-light: #e8f5e9;
+    --red-danger: #d32f2f;
+    --red-light: #ffebee;
+    
+    --border-radius-sm: 8px;
+    --border-radius-md: 14px;
+    --border-radius-lg: 20px;
+    --border-radius-full: 9999px;
+    
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.18);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset y caja general */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    position: relative;
+    background-color: #0d0e10;
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.40) 0%, rgba(0, 0, 0, 0.45) 100%),
+                url('tropical.jpg') center center / cover no-repeat fixed;
+    opacity: 1;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* 2. PANTALLA DE ACCESO / LOGIN OBLIGATORIO AL INICIAR */
+.login-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.35)),
+                url('tropical.jpg') center center / cover no-repeat;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-card {
+    background: var(--white);
+    width: 100%;
+    max-width: 440px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    border: 2px solid var(--secondary-yellow);
+    animation: zoomIn 0.35s ease;
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.login-header {
+    background: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
+    color: var(--white);
+    padding: 32px 24px 24px 24px;
+    text-align: center;
+    border-bottom: 3px solid var(--primary-orange);
+}
+
+.login-logo-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.login-header h2 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--white);
+}
+
+.login-subtitle {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--secondary-yellow);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.login-body {
+    padding: 28px 24px 16px 24px;
+}
+
+.login-footer {
+    padding: 0 24px 28px 24px;
+}
+
+/* CONTENEDOR PRINCIPAL Y STICKY FOOTER */
+#app-content-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#app-content-wrapper.app-locked {
+    display: none !important;
+}
+
+.app-main {
+    flex: 1;
+}
+
+/* 3. CABECERA Y NAVEGACIÓN */
+.app-header {
+    background: rgba(26, 25, 24, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 3px solid var(--primary-orange);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.header-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.brand-logo:hover {
+    transform: scale(1.02);
+}
+
+.logo-icon {
+    font-size: 2.2rem;
+    background: linear-gradient(135deg, var(--secondary-yellow), var(--primary-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--white);
+}
+
+.brand-subtitle {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--secondary-yellow);
+    text-transform: uppercase;
+}
+
+.app-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: #d1cfcb;
+    padding: 10px 18px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-btn:hover {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+    color: var(--white);
+    box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4);
+}
+
+.mobile-menu-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    font-size: 1.5rem;
+    padding: 6px 12px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+}
+
+/* 4. CONTENEDOR PRINCIPAL */
+.app-main {
+    flex: 1;
+    padding: 28px 20px;
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 5. ENCABEZADO DE LA PANTALLA PRINCIPAL */
+.main-title-banner {
+    background: linear-gradient(135deg, rgba(31, 30, 28, 0.9), rgba(42, 40, 37, 0.94)), url('tropical.jpg') center/cover;
+    border-radius: var(--border-radius-md);
+    padding: 22px 30px;
+    color: var(--white);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    border-bottom: 4px solid var(--secondary-yellow);
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.main-title-banner h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    background: linear-gradient(90deg, #ffffff, var(--secondary-yellow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.main-title-banner .subtitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--secondary-yellow);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+.auto-date-badge {
+    display: inline-block;
+    background: rgba(255, 179, 0, 0.2);
+    border: 1px solid var(--secondary-yellow);
+    color: var(--white);
+    padding: 4px 14px;
+    border-radius: var(--border-radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.auto-date-badge strong {
+    color: var(--secondary-yellow);
+}
+
+/* 6. TARJETAS Y CONTENEDORES */
+.card {
+    background: var(--white);
+    border-radius: var(--border-radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-title-bar {
+    border-bottom: 2px solid #f0e6da;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+}
+
+.card-title-bar h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.92);
+    padding: 18px 24px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.section-desc {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+/* 7. FORMULARIOS Y ELEMENTOS DE ENTRADA */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-dark);
+}
+
+.required {
+    color: var(--red-danger);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #e0dad3;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background: var(--white);
+    transition: var(--transition);
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.18);
+}
+
+.input-readonly {
+    background-color: #f5f2ed !important;
+    color: #555;
+    cursor: not-allowed;
+}
+
+.form-help {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.label-with-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--primary-orange-dark);
+    font-weight: 800;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: var(--primary-orange);
+}
+
+/* GRIDS Y DISTRIBUCIÓN */
+.grid-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.grid-2-cols-compact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.flex-grow { flex: 1; min-width: 200px; }
+.margin-top { margin-top: 18px; }
+.margin-top-sm { margin-top: 10px; }
+.margin-top-lg { margin-top: 28px; }
+.margin-bottom-md { margin-bottom: 20px; }
+
+/* 8. BOTONES */
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-weight: 800;
+    font-size: 0.92rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+    user-select: none;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.35);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 107, 0, 0.45);
+}
+
+.btn-secondary {
+    background: #4a453e;
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background: #36322d;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--red-danger);
+    color: var(--white);
+}
+
+.btn-danger:hover { background: #b71c1c; }
+
+.btn-success {
+    background: linear-gradient(135deg, var(--green-tropical), #1b5e20);
+    color: var(--white);
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(46, 125, 50, 0.45);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+.btn-lg {
+    padding: 14px 26px;
+    font-size: 1.05rem;
+}
+
+.btn-block { width: 100%; }
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* 9. MINI REPORTE DEL TRABAJADOR SELECCIONADO (EN VIVO) */
+.mini-report-card {
+    background: linear-gradient(145deg, #ffffff, #fff9f2);
+    border: 2px solid var(--secondary-yellow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed #f0e6da;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+}
+
+.summary-header h3 {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--text-dark);
+}
+
+.summary-badge {
+    background: var(--secondary-yellow);
+    color: #5c3c00;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: var(--border-radius-full);
+}
+
+.summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.summary-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.summary-value {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.summary-value.highlight {
+    color: var(--primary-orange-dark);
+}
+
+.summary-total-box {
+    background: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
+    border-radius: var(--border-radius-md);
+    padding: 14px;
+    color: var(--white);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 179, 0, 0.3);
+}
+
+.total-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--secondary-yellow);
+}
+
+.total-amount {
+    font-size: 1.9rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(255, 107, 0, 0.5);
+}
+
+/* 10. REPORTE EN VIVO Y TABLA GENERAL */
+.summary-report-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fffcf7 100%);
+    border: 2px solid var(--primary-orange-light);
+}
+
+.report-header-live {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
+    color: var(--white);
+    padding: 16px 20px;
+    border-radius: var(--border-radius-sm);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.brand-tag {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--secondary-yellow);
+    letter-spacing: 0.5px;
+}
+
+.report-period-info {
+    font-size: 0.88rem;
+    color: #e2ded7;
+    display: flex;
+    gap: 20px;
+}
+
+.report-period-info strong {
+    color: var(--white);
+}
+
+/* BANNER DE TOTAL GENERAL DE SALARIOS */
+.total-general-banner {
+    background: linear-gradient(135deg, var(--dark-bg), #2d2a26);
+    border-radius: var(--border-radius-md);
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid var(--secondary-yellow);
+    box-shadow: var(--shadow-md);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.total-stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #bbb;
+    text-transform: uppercase;
+}
+
+.stat-count {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--white);
+}
+
+.stat-money {
+    font-size: 2.3rem;
+    font-weight: 900;
+    color: var(--secondary-yellow);
+    text-shadow: 0 2px 8px rgba(255, 179, 0, 0.4);
+}
+
+/* 11. TABLAS DE DATOS */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table th {
+    background: linear-gradient(90deg, var(--primary-orange-dark), var(--primary-orange));
+    color: var(--white);
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.data-table th:first-child { border-top-left-radius: var(--border-radius-sm); }
+.data-table th:last-child { border-top-right-radius: var(--border-radius-sm); }
+
+.data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eee8e0;
+    font-size: 0.92rem;
+    color: var(--text-dark);
+    background: var(--white);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:nth-child(even) td { background: #fffdf9; }
+.data-table tbody tr:hover td { background: #fff3e0; }
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--border-radius-full);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.status-badge.activo { background: var(--green-light); color: var(--green-tropical); }
+.status-badge.inactivo { background: var(--red-light); color: var(--red-danger); }
+
+.actions-cell {
+    display: flex;
+    gap: 6px;
+}
+
+/* 12. LISTADO DE REPORTES GUARDADOS */
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.report-summary-card {
+    background: var(--white);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid var(--primary-orange);
+    transition: var(--transition);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.report-summary-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.report-summary-main h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.report-summary-main p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+}
+
+.report-summary-stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.rep-stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.rep-stat-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.rep-stat-val {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--primary-orange-dark);
+}
+
+/* 13. REPORTE EN IMPRESIÓN Y VISTA DETALLADA */
+.report-view-detail { padding: 10px; }
+
+.report-header-detail {
+    text-align: center;
+    border-bottom: 2px solid var(--primary-orange);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.report-header-detail h2 {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--primary-orange-dark);
+}
+
+.report-header-detail h3 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-top: 4px;
+}
+
+.report-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: var(--yellow-light);
+    padding: 14px 18px;
+    border-radius: var(--border-radius-sm);
+    margin-top: 14px;
+    font-size: 0.9rem;
+}
+
+.report-table-print {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.report-table-print th,
+.report-table-print td {
+    border: 1px solid #d0c8be;
+    padding: 10px 12px;
+    font-size: 0.88rem;
+    text-align: left;
+}
+
+.report-table-print th {
+    background-color: #f5eedf;
+    font-weight: 800;
+}
+
+.report-summary-footer-print {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid var(--text-dark);
+}
+
+/* 14. MODALES Y TOASTS */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    background: var(--white);
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    transform: scale(0.94);
+    transition: var(--transition);
+}
+
+.modal-card-lg { max-width: 800px; }
+.modal-card-sm { max-width: 380px; }
+
+.modal-backdrop.active .modal-card { transform: scale(1); }
+
+.modal-header {
+    background: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
+    color: var(--white);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--secondary-yellow);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+.modal-body { padding: 20px; }
+.modal-footer {
+    padding: 16px 20px;
+    background: #fcf9f5;
+    border-top: 1px solid #efe8df;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.justify-center { justify-content: center; }
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 6000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: var(--dark-bg);
+    color: var(--white);
+    padding: 14px 22px;
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-md);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 5px solid var(--primary-orange);
+    animation: toastIn 0.3s ease forwards;
+}
+
+.toast.success { border-left-color: var(--green-tropical); }
+.toast.error { border-left-color: var(--red-danger); }
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.app-footer {
+    background: var(--dark-bg);
+    color: #9e9992;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85rem;
+    border-top: 1px solid #333;
+    margin-top: auto;
+}
+
+/* 15. ESTILOS DE IMPRESIÓN (@media print) */
+.print-only { display: none; }
+
+@media print {
+    .no-print,
+    .login-backdrop,
+    .app-header,
+    .app-main,
+    .app-footer,
+    .modal-backdrop,
+    .toast-container,
+    .btn {
+        display: none !important;
+    }
+
+    body {
+        background: none !important;
+        color: #000 !important;
+        font-family: Arial, sans-serif !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .print-only {
+        display: block !important;
+        padding: 20px;
+    }
+}
+
+/* 16. RESPONSIVIDAD */
+@media (max-width: 900px) {
+    .grid-2-cols { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle { display: block; }
+    
+    .app-nav {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        margin-top: 10px;
+    }
+
+    .app-nav.open { display: flex; }
+    
+    .header-container { flex-wrap: wrap; }
+
+    .grid-2-cols-compact { grid-template-columns: 1fr; }
+    
+    .total-general-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

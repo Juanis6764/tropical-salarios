@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tropical Grill – Control de Salarios</title>
+    <link rel="stylesheet" href="jijiji/styles.css">
+</head>
+<body>
+
+    <!-- REPORTE SOLO PARA IMPRESIÓN (window.print) -->
+    <div id="print-only-container" class="print-only"></div>
+
+    <!-- PANTALLA DE ACCESO / LOGIN OBLIGATORIO AL INICIAR -->
+    <div id="app-login-screen" class="login-backdrop">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="login-logo-icon">🌴</span>
+                <h2>TROPICAL GRILL</h2>
+                <p class="login-subtitle">CONTROL DE SALARIOS</p>
+            </div>
+            
+            <form id="form-system-login" onsubmit="handleSystemLoginSubmit(event)">
+                <div class="login-body">
+                    <div class="form-group">
+                        <label for="login-password-input">🔒 Contraseña de Encargado:</label>
+                        <input type="password" id="login-password-input" placeholder="••••••••" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                        🔑 INGRESAR AL SISTEMA
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE LA APLICACIÓN (OCULTO HASTA INGRESAR LA CONTRASEÑA) -->
+    <div id="app-content-wrapper" class="app-locked">
+
+        <!-- CABECERA Y NAVEGACIÓN PRINCIPAL -->
+        <header class="app-header no-print">
+            <div class="header-container">
+                <div class="brand-logo" id="brand-home-btn" title="Ir a Realizar Cálculo">
+                    <span class="logo-icon">🌴</span>
+                    <div class="brand-text">
+                        <span class="brand-title">TROPICAL GRILL</span>
+                        <span class="brand-subtitle">CONTROL DE SALARIOS</span>
+                    </div>
+                </div>
+                
+                <button class="mobile-menu-toggle" id="mobile-menu-btn" aria-label="Abrir menú">
+                    ☰
+                </button>
+
+                <nav class="app-nav" id="main-nav">
+                    <button class="nav-btn active" data-tab="calculo">
+                        <span class="nav-icon">💵</span> REALIZAR CÁLCULO
+                    </button>
+                    <button class="nav-btn" data-tab="trabajadores">
+                        <span class="nav-icon">👨‍🍳</span> TRABAJADORES
+                    </button>
+                    <button class="nav-btn" data-tab="reportes">
+                        <span class="nav-icon">📋</span> REPORTES GUARDADOS
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- CONTENEDOR PRINCIPAL -->
+        <main class="app-main no-print">
+            <div class="main-container">
+
+                <!-- 1. SECCIÓN PRINCIPAL: REALIZAR CÁLCULO -->
+                <section id="section-calculo" class="tab-content active">
+                    
+                    <!-- Encabezado de la Pantalla Principal -->
+                    <div class="main-title-banner">
+                        <h1>TROPICAL GRILL</h1>
+                        <p class="subtitle">CONTROL DE SALARIOS</p>
+                        <div class="auto-date-badge">
+                            <span>📅 FECHA DE HOY: </span><strong id="auto-system-date-display">--/--/----</strong>
+                        </div>
+                    </div>
+
+                    <!-- Configuración del Periodo de Pago -->
+                    <div class="card margin-bottom-md">
+                        <div class="card-title-bar">
+                            <h3>📅 1. Seleccionar Periodo de Pago</h3>
+                        </div>
+                        <div class="grid-2-cols">
+                            <div class="form-group">
+                                <label for="calc-desde">Periodo DESDE: <span class="required">*</span></label>
+                                <input type="date" id="calc-desde" onchange="updateLiveReportHeader()">
+                            </div>
+                            <div class="form-group">
+                                <label for="calc-hasta">Periodo HASTA: <span class="required">*</span></label>
+                                <input type="date" id="calc-hasta" onchange="updateLiveReportHeader()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario + Mini Reporte del Trabajador Actual -->
+                    <div class="grid-2-cols margin-bottom-md">
+                        <!-- Formulario de Entrada -->
+                        <div class="card">
+                            <div class="card-title-bar">
+                                <h3>👨‍🍳 2. Ingresar Trabajador</h3>
+                            </div>
+
+                            <form id="form-add-worker-draft" onsubmit="handleAddWorkerToDraft(event)">
+                                <div class="form-group">
+                                    <div class="label-with-btn">
+                                        <label for="draft-worker-input">Buscar / Seleccionar Trabajador: <span class="required">*</span></label>
+                                        <button type="button" class="btn-link" onclick="openWorkerModal(null, true)">
+                                            + NUEVO TRABAJADOR
+                                        </button>
+                                    </div>
+                                    <input type="text" id="draft-worker-input" list="workers-datalist" placeholder="Escribe para buscar (Ej: Emily)..." autocomplete="off" oninput="onDraftWorkerSearchInput()">
+                                    <datalist id="workers-datalist">
+                                        <!-- Se llena dinámicamente -->
+                                    </datalist>
+                                    <input type="hidden" id="draft-worker-id">
+                                </div>
+
+                                <div class="grid-2-cols-compact">
+                                    <div class="form-group">
+                                        <label for="draft-horas">Horas Trabajadas: <span class="required">*</span></label>
+                                        <input type="number" id="draft-horas" min="0" max="500" value="0" oninput="calculateWorkerMiniReportLive()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="draft-minutos">Minutos Trabajados: <span class="required">*</span></label>
+                                        <input type="number" id="draft-minutos" min="0" max="59" value="0" oninput="calculateWorkerMiniReportLive()">
+                                    </div>
+                                </div>
+
+                                <div class="grid-2-cols-compact">
+                                    <div class="form-group">
+                                        <label for="draft-feriado">¿Fue Feriado?:</label>
+                                        <select id="draft-feriado" onchange="toggleDraftHolidayInput(); calculateWorkerMiniReportLive()">
+                                            <option value="no" selected>No</option>
+                                            <option value="si">Sí</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="group-draft-aumento" style="display: none;">
+                                        <label for="draft-aumento">Aumento Feriado (Bs):</label>
+                                        <input type="number" id="draft-aumento" step="0.50" min="0" value="0.00" oninput="calculateWorkerMiniReportLive()">
+                                    </div>
+                                </div>
+
+                                <div class="form-actions margin-top">
+                                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                        ➕ AGREGAR AL CÁLCULO
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Mini Reporte en Vivo del Trabajador Seleccionado -->
+                        <div class="card mini-report-card">
+                            <div class="summary-header">
+                                <h3>REPORTE DEL TRABAJADOR</h3>
+                            </div>
+                            
+                            <div class="summary-details">
+                                <div class="summary-row">
+                                    <span class="summary-label">Trabajador:</span>
+                                    <span class="summary-value" id="mini-trabajador">--</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Horas registradas:</span>
+                                    <span class="summary-value" id="mini-horas-str">0 h 0 min</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Horas calculadas:</span>
+                                    <span class="summary-value highlight" id="mini-horas-decimal">0.00 h</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Pago por hora asignado:</span>
+                                    <span class="summary-value" id="mini-pago-hora">Bs 0.00</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Pago base:</span>
+                                    <span class="summary-value" id="mini-pago-base">Bs 0.00</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Feriado:</span>
+                                    <span class="summary-value" id="mini-feriado">No</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Aumento feriado:</span>
+                                    <span class="summary-value" id="mini-aumento">Bs 0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="summary-total-box">
+                                <span class="total-title">TOTAL TRABAJADOR</span>
+                                <span class="total-amount" id="mini-total-pagar">Bs 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Reporte en Vivo (Borrador General) -->
+                    <div class="card summary-report-card">
+                        <div class="report-header-live">
+                            <div class="brand-tag">🌴 TROPICAL GRILL - REPORTE DE SALARIOS</div>
+                            <div class="report-period-info">
+                                <p><strong>PERIODO DE PAGO:</strong> <span id="live-rep-periodo">-- / -- / ---- AL -- / -- / ----</span></p>
+                                <p><strong>FECHA DE PAGO:</strong> <span id="live-rep-fecha-pago">-- / -- / ----</span></p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive margin-top">
+                            <table class="data-table" id="draft-table">
+                                <thead>
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>TRABAJADOR</th>
+                                        <th>HORAS</th>
+                                        <th>PAGO/HORA</th>
+                                        <th>FERIADO</th>
+                                        <th>AUMENTO</th>
+                                        <th>TOTAL</th>
+                                        <th class="no-print">ACCIONES</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="draft-table-body">
+                                    <!-- Filas agregadas dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Total General Destacado -->
+                        <div class="total-general-banner margin-top">
+                            <div class="total-stat-item">
+                                <span class="stat-title">CANTIDAD DE TRABAJADORES</span>
+                                <span class="stat-count" id="draft-total-workers">0</span>
+                            </div>
+                            <div class="total-stat-item highlight">
+                                <span class="stat-title">TOTAL GENERAL A PAGAR</span>
+                                <span class="stat-money" id="draft-total-money">Bs 0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Botón para Guardar el Reporte Final -->
+                        <div class="margin-top-lg">
+                            <button class="btn btn-success btn-lg btn-block btn-save-payroll" onclick="saveFinalPayrollReport()">
+                                💾 GUARDAR REPORTE DEL PAGO
+                            </button>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- 2. SECCIÓN: TRABAJADORES -->
+                <section id="section-trabajadores" class="tab-content">
+                    <div class="section-header">
+                        <div>
+                            <h2>👨‍🍳 Control de Trabajadores</h2>
+                            <p class="section-desc">Administra la lista de personal de Tropical Grill y sus pagos asignados por hora.</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openWorkerModal()">
+                            ➕ Registrar Trabajador
+                        </button>
+                    </div>
+
+                    <!-- Filtros de Trabajadores -->
+                    <div class="filter-bar card">
+                        <div class="form-group flex-grow">
+                            <label for="search-worker">Buscar por nombre:</label>
+                            <input type="text" id="search-worker" placeholder="Ej: Emily..." oninput="renderWorkers()">
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-worker-status">Estado:</label>
+                            <select id="filter-worker-status" onchange="renderWorkers()">
+                                <option value="todos">Todos los Estados</option>
+                                <option value="activo" selected>Solo Activos</option>
+                                <option value="inactivo">Solo Inactivos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Listado de Trabajadores -->
+                    <div class="card margin-top">
+                        <div class="table-responsive">
+                            <table class="data-table" id="workers-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Pago por Hora Asignado</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="workers-table-body">
+                                    <!-- Se llena dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. SECCIÓN: REPORTES GUARDADOS -->
+                <section id="section-reportes" class="tab-content">
+                    <div class="section-header">
+                        <div>
+                            <h2>📋 Reportes Guardados</h2>
+                            <p class="section-desc">Consulta los reportes finales de pagos realizados anteriormente.</p>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Reportes Guardados -->
+                    <div id="saved-reports-container" class="reports-list">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- PIE DE PÁGINA -->
+        <footer class="app-footer no-print">
+            <p>Control de Salarios &copy; 2026</p>
+        </footer>
+    </div>
+
+    <!-- MODAL: REGISTRAR / EDITAR TRABAJADOR -->
+    <div class="modal-backdrop" id="modal-worker">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-worker-title">➕ Registrar Trabajador</h3>
+                <button class="modal-close-btn" onclick="closeWorkerModal()">&times;</button>
+            </div>
+            <form id="form-worker" onsubmit="handleWorkerSubmit(event)">
+                <input type="hidden" id="work-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="work-nombre">Nombre Completo <span class="required">*</span></label>
+                        <input type="text" id="work-nombre" placeholder="Ej: Emily" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="work-pago">Pago por Hora Asignado (Bs) <span class="required">*</span></label>
+                        <input type="number" id="work-pago" step="0.10" min="0.10" placeholder="Ej: 12.00" required>
+                        <small class="form-help">Este pago se aplicará automáticamente cuando la selecciones para el cálculo.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="work-estado">Estado</label>
+                        <select id="work-estado">
+                            <option value="true" selected>Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeWorkerModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Trabajador</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDITAR FILA EN EL BORRADOR DE CÁLCULO -->
+    <div class="modal-backdrop" id="modal-edit-draft-item">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Editar Trabajador en Cálculo</h3>
+                <button class="modal-close-btn" onclick="closeEditDraftModal()">&times;</button>
+            </div>
+            <form id="form-edit-draft-item" onsubmit="handleSaveEditDraftItem(event)">
+                <input type="hidden" id="edit-draft-index">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="edit-draft-nombre">Trabajador</label>
+                        <input type="text" id="edit-draft-nombre" readonly class="input-readonly">
+                    </div>
+                    <div class="grid-2-cols-compact">
+                        <div class="form-group">
+                            <label for="edit-draft-horas">Horas Trabajadas</label>
+                            <input type="number" id="edit-draft-horas" min="0" max="500" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-draft-minutos">Minutos Trabajados</label>
+                            <input type="number" id="edit-draft-minutos" min="0" max="59" required>
+                        </div>
+                    </div>
+                    <div class="grid-2-cols-compact">
+                        <div class="form-group">
+                            <label for="edit-draft-feriado">¿Fue Feriado?</label>
+                            <select id="edit-draft-feriado" onchange="toggleEditDraftHolidayInput()">
+                                <option value="no">No</option>
+                                <option value="si">Sí</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="group-edit-draft-aumento" style="display: none;">
+                            <label for="edit-draft-aumento">Aumento Feriado (Bs)</label>
+                            <input type="number" id="edit-draft-aumento" step="0.50" min="0" value="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditDraftModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: VISUALIZAR REPORTE GUARDADO DETALLADO -->
+    <div class="modal-backdrop" id="modal-view-report">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3>📋 Reporte de Salarios Guardado</h3>
+                <button class="modal-close-btn" onclick="closeViewReportModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-view-report-content">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeViewReportModal()">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btn-print-view-report">🖨️ IMPRIMIR / GUARDAR PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN GENÉRICO -->
+    <div class="modal-backdrop" id="modal-confirm">
+        <div class="modal-card modal-card-sm">
+            <div class="modal-header">
+                <h3 id="confirm-modal-title">Confirmación</h3>
+                <button class="modal-close-btn" onclick="closeConfirmModal(false)">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p id="confirm-modal-message">¿Está seguro de realizar esta acción?</p>
+            </div>
+            <div class="modal-footer justify-center">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmModal(false)">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirm-btn-ok">Sí, continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICACIONES TOAST -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="jijiji/script.js"></script>
+</body>
+</html>
