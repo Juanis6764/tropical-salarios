@@ -100,9 +100,16 @@ body::before {
 .login-header {
     background: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
     color: var(--white);
-    padding: 32px 24px 24px 24px;
+    padding: 24px;
     text-align: center;
     border-bottom: 3px solid var(--primary-orange);
+}
+
+.login-brand-logo {
+    display: block;
+    width: min(100%, 327px);
+    height: auto;
+    margin: 0 auto;
 }
 
 .login-logo-icon {
@@ -244,6 +251,16 @@ body::before {
     background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark));
     color: var(--white);
     box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4);
+}
+
+.nav-btn-logout {
+    color: #ffb4ad;
+    border: 1px solid rgba(211, 47, 47, 0.45);
+}
+
+.nav-btn-logout:hover {
+    background: var(--red-danger);
+    color: var(--white);
 }
 
 .mobile-menu-toggle {

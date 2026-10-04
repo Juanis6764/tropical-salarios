@@ -89,6 +89,22 @@ function handleSystemLoginSubmit(e) {
     }
 }
 
+function handleSystemLogout() {
+    isSystemUnlocked = false;
+
+    const loginScreen = document.getElementById('app-login-screen');
+    const appWrapper = document.getElementById('app-content-wrapper');
+    const passwordInput = document.getElementById('login-password-input');
+    const mainNav = document.getElementById('main-nav');
+
+    if (mainNav) mainNav.classList.remove('open');
+    if (passwordInput) passwordInput.value = '';
+    if (appWrapper) appWrapper.classList.add('app-locked');
+    if (loginScreen) loginScreen.style.display = 'flex';
+
+    setTimeout(() => passwordInput?.focus(), 50);
+}
+
 function asegurarEstructuraDatos() {
     if (!appData || typeof appData !== 'object') appData = {};
     if (!Array.isArray(appData.trabajadores)) appData.trabajadores = [];
@@ -221,6 +237,7 @@ function initUI() {
     navButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const tab = btn.getAttribute('data-tab');
+            if (!tab) return;
             switchTab(tab);
         });
     });
