@@ -100,16 +100,9 @@ body::before {
 .login-header {
     background: linear-gradient(135deg, var(--dark-bg), var(--dark-surface));
     color: var(--white);
-    padding: 24px;
+    padding: 32px 24px 24px 24px;
     text-align: center;
     border-bottom: 3px solid var(--primary-orange);
-}
-
-.login-brand-logo {
-    display: block;
-    width: min(100%, 327px);
-    height: auto;
-    margin: 0 auto;
 }
 
 .login-logo-icon {
