@@ -344,7 +344,7 @@
                     <div class="form-group">
                         <label for="work-pago">Pago por Hora Asignado (Bs) <span class="required">*</span></label>
                         <input type="number" id="work-pago" step="0.10" min="0.10" placeholder="Ej: 12.00" required>
-                        <small class="form-help">Este pago se aplicará automáticamente cuando la selecciones para el cálculo.</small>
+                        <small class="form-help">Este pago se aplicará automáticamente en los próximos cálculos. Los pagos ya guardados conservan la tarifa que tenían en esa fecha.</small>
                     </div>
                     <div class="form-group">
                         <label for="work-estado">Estado</label>
@@ -408,6 +408,22 @@
         </div>
     </div>
 
+    <!-- MODAL: VER CÁLCULO INDIVIDUAL DEL BORRADOR -->
+    <div class="modal-backdrop" id="modal-view-draft-calculation">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>👁️ Cálculo del Trabajador</h3>
+                <button class="modal-close-btn" onclick="closeDraftCalculationModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-view-draft-calculation-content">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeDraftCalculationModal()">Cerrar y continuar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: VISUALIZAR REPORTE GUARDADO DETALLADO -->
     <div class="modal-backdrop" id="modal-view-report">
         <div class="modal-card modal-card-lg">
@@ -421,6 +437,22 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeViewReportModal()">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btn-print-view-report">🖨️ IMPRIMIR / GUARDAR PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: HISTORIAL DE PAGOS POR TRABAJADOR -->
+    <div class="modal-backdrop" id="modal-worker-payment-history">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <h3 id="worker-payment-history-title">👁️ Historial de Pagos</h3>
+                <button class="modal-close-btn" onclick="closeWorkerPaymentHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="worker-payment-history-content">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeWorkerPaymentHistoryModal()">Cerrar</button>
             </div>
         </div>
     </div>
@@ -445,6 +477,9 @@
     <!-- NOTIFICACIONES TOAST -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- Firebase permite guardar trabajadores y reportes en línea. -->
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
     <script src="jijiji/script.js"></script>
 </body>
 </html>

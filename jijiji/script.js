@@ -3,11 +3,37 @@
    Lógica JavaScript Principal (Vanilla JS - Sin Dependencias Externas)
    ========================================================================== */
 
-// CLAVE PRINCIPAL DE LOCALSTORAGE
+// CLAVE PRINCIPAL DE LOCALSTORAGE (se conserva como respaldo local)
 const STORAGE_KEY = 'TROPICAL_GRILL_DATA_V4';
 
+// CONFIGURACIÓN DE FIREBASE / FIRESTORE
+// Esta configuración identifica el proyecto web; las reglas de Firestore
+// determinan quién puede acceder realmente a los datos.
+const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyA_LjRWZr2EghWzVMQMGAKzeDPDHedygZg',
+    authDomain: 'tropicalpagos-55d9c.firebaseapp.com',
+    projectId: 'tropicalpagos-55d9c',
+    storageBucket: 'tropicalpagos-55d9c.firebasestorage.app',
+    messagingSenderId: '550359954901',
+    appId: '1:550359954901:web:28a5f87cbd4033574fb95c',
+    measurementId: 'G-R3ZFMK9L7L'
+};
+const FIRESTORE_COLLECTION = 'tropicalPagos';
+const FIRESTORE_DOCUMENT = 'datos';
+let firestoreDb = null;
+let firestoreSyncQueue = Promise.resolve();
+
+try {
+    if (typeof firebase !== 'undefined') {
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        firestoreDb = firebase.firestore();
+    }
+} catch (error) {
+    console.error('No se pudo inicializar Firebase:', error);
+}
+
 // CONTRASEÑA OFICIAL DEL SISTEMA Y ENCARGADO
-const ADMIN_PASSWORD = 'tropical26*';
+const ADMIN_PASSWORD = 'Tropical26.';
 let isSystemUnlocked = false;
 
 // ESTADO GLOBAL DE LA APLICACIÓN
@@ -31,8 +57,8 @@ let pendingConfirmCallback = null;
 // 1. INICIALIZACIÓN Y LOGIN INICIAL OBLIGATORIO
 // ==========================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    cargarDatos();
+document.addEventListener('DOMContentLoaded', async () => {
+    await cargarDatos();
     initUI();
     
     // Enfocar campo de contraseña en pantalla de inicio
@@ -63,20 +89,53 @@ function handleSystemLoginSubmit(e) {
     }
 }
 
-function cargarDatos() {
+function asegurarEstructuraDatos() {
+    if (!appData || typeof appData !== 'object') appData = {};
+    if (!Array.isArray(appData.trabajadores)) appData.trabajadores = [];
+    if (!Array.isArray(appData.reportesGuardados)) appData.reportesGuardados = [];
+}
+
+async function cargarDatos() {
+    let hayRespaldoLocal = false;
+
     try {
         const json = localStorage.getItem(STORAGE_KEY);
         if (json) {
             appData = JSON.parse(json);
-            if (!appData.trabajadores) appData.trabajadores = [];
-            if (!appData.reportesGuardados) appData.reportesGuardados = [];
-            sanearIdsTrabajadores();
-        } else {
-            inicializarDatosPorDefecto();
+            hayRespaldoLocal = true;
         }
     } catch (e) {
         console.error('Error al cargar localStorage:', e);
-        inicializarDatosPorDefecto();
+        appData = { trabajadores: [], reportesGuardados: [] };
+    }
+
+    asegurarEstructuraDatos();
+
+    if (!firestoreDb) {
+        sanearIdsTrabajadores();
+        if (!hayRespaldoLocal) guardarDatos();
+        return;
+    }
+
+    try {
+        const reference = firestoreDb.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOCUMENT);
+        const snapshot = await reference.get();
+
+        if (snapshot.exists && snapshot.data().appData) {
+            appData = snapshot.data().appData;
+            asegurarEstructuraDatos();
+            sanearIdsTrabajadores();
+            // Mantiene una copia de respaldo en el navegador que se está usando.
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        } else {
+            // La primera computadora que conecte el sistema sube su información local.
+            // Si estaba vacía, crea el documento inicial en Firestore.
+            guardarDatos();
+        }
+    } catch (e) {
+        console.error('Error al cargar Firestore; se usará el respaldo local:', e);
+        sanearIdsTrabajadores();
+        if (!hayRespaldoLocal) guardarDatos();
     }
 }
 
@@ -131,6 +190,18 @@ function guardarDatos() {
     } catch (e) {
         console.error('Error al guardar en localStorage:', e);
         showToast('Error al guardar los datos localmente.', 'error');
+    }
+
+    if (firestoreDb) {
+        // La cola evita que dos cambios rápidos lleguen a Firestore en desorden.
+        const dataSnapshot = JSON.parse(JSON.stringify(appData));
+        firestoreSyncQueue = firestoreSyncQueue
+            .catch(() => undefined)
+            .then(() => firestoreDb.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOCUMENT).set({
+                appData: dataSnapshot,
+                actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+            }))
+            .catch(error => console.error('Error al guardar en Firestore:', error));
     }
 }
 
@@ -435,6 +506,9 @@ function renderDraftTable() {
             <td><strong style="color:var(--primary-orange-dark); font-size:1.05rem;">${formatBs(item.total)}</strong></td>
             <td class="no-print">
                 <div class="actions-cell">
+                    <button class="btn btn-secondary btn-sm" onclick="viewDraftCalculation(${index})" title="Ver cálculo">
+                        👁️ Ver
+                    </button>
                     <button class="btn btn-secondary btn-sm" onclick="openEditDraftModal(${index})" title="Editar horas">
                         ✏️ Editar
                     </button>
@@ -449,6 +523,48 @@ function renderDraftTable() {
 
     document.getElementById('draft-total-workers').textContent = list.length;
     document.getElementById('draft-total-money').textContent = formatBs(totalMoneySum);
+}
+
+// Muestra el detalle de un trabajador añadido al cálculo sin cerrar ni alterar el borrador.
+function viewDraftCalculation(index) {
+    const item = currentDraftPayroll.trabajadores[index];
+    if (!item) return;
+
+    const container = document.getElementById('modal-view-draft-calculation-content');
+    const periodoDesde = currentDraftPayroll.fechaDesde ? formatDateDisplay(currentDraftPayroll.fechaDesde) : '--/--/----';
+    const periodoHasta = currentDraftPayroll.fechaHasta ? formatDateDisplay(currentDraftPayroll.fechaHasta) : '--/--/----';
+    const tarifa = Number(item.pagoPorHora) || 0;
+    const horasCalculadas = Number(item.horasDecimal) || 0;
+
+    container.innerHTML = `
+        <div class="report-view-detail">
+            <div class="report-header-detail">
+                <h2>${escapeHtml(item.workerNombre)}</h2>
+                <h3>DETALLE DEL CÁLCULO</h3>
+            </div>
+            <div class="report-meta-grid">
+                <div style="grid-column: span 2;"><strong>PERIODO:</strong> ${periodoDesde} AL ${periodoHasta}</div>
+                <div><strong>HORAS REGISTRADAS:</strong> ${item.horas} h ${item.minutos} min</div>
+                <div><strong>HORAS CALCULADAS:</strong> ${formatNumber(horasCalculadas)} h</div>
+                <div><strong>PAGO POR HORA:</strong> ${formatBs(tarifa)}</div>
+                <div><strong>PAGO BASE:</strong> ${formatBs(item.pagoBase)}</div>
+                <div><strong>¿FERIADO?:</strong> ${item.esFeriado ? 'Sí' : 'No'}</div>
+                <div><strong>AUMENTO POR FERIADO:</strong> ${formatBs(item.aumentoFeriado)}</div>
+            </div>
+            <div class="total-general-banner margin-top">
+                <div class="total-stat-item highlight" style="width:100%;">
+                    <span class="stat-title">TOTAL A PAGAR</span>
+                    <span class="stat-money">${formatBs(item.total)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modal-view-draft-calculation').classList.add('active');
+}
+
+function closeDraftCalculationModal() {
+    document.getElementById('modal-view-draft-calculation').classList.remove('active');
 }
 
 function removeDraftWorker(index) {
@@ -543,7 +659,12 @@ function saveFinalPayrollReport() {
                 fechaHasta: hasta,
                 fechaPago: hoyStr,
                 fechaHoraCreacion: `${fechaCreacionStr} - ${horaCreacionStr}`,
-                trabajadores: JSON.parse(JSON.stringify(currentDraftPayroll.trabajadores)),
+                // Se guarda una instantánea completa: cambios futuros en la tarifa
+                // del trabajador no modifican ningún pago ya registrado.
+                trabajadores: currentDraftPayroll.trabajadores.map(item => ({
+                    ...JSON.parse(JSON.stringify(item)),
+                    pagoPorHoraRegistrado: item.pagoPorHora
+                })),
                 cantidadTrabajadores: currentDraftPayroll.trabajadores.length,
                 totalGeneral: totalGeneralSum
             };
@@ -615,6 +736,9 @@ function renderWorkers() {
             </td>
             <td>
                 <div class="actions-cell">
+                    <button class="btn btn-secondary btn-sm" onclick="viewWorkerPaymentHistory('${w.id}')" title="Ver pagos registrados">
+                        👁️ Ver pagos
+                    </button>
                     <button class="btn btn-secondary btn-sm" onclick="openWorkerModal('${w.id}')" title="Editar trabajador">
                         ✏️ Editar
                     </button>
@@ -629,6 +753,68 @@ function renderWorkers() {
         `;
         tbody.appendChild(tr);
     });
+}
+
+// Consulta los pagos ya guardados de un trabajador. La tarifa mostrada proviene
+// de la instantánea del reporte, nunca de la tarifa actual del trabajador.
+function viewWorkerPaymentHistory(workerId) {
+    const worker = appData.trabajadores.find(w => w.id === workerId);
+    if (!worker) return;
+
+    const payments = appData.reportesGuardados
+        .flatMap(report => (report.trabajadores || [])
+            .filter(item => item.workerId === workerId || item.workerNombre === worker.nombre)
+            .map(item => ({ report, item })))
+        .sort((a, b) => String(b.report.fechaPago || '').localeCompare(String(a.report.fechaPago || '')));
+
+    document.getElementById('worker-payment-history-title').textContent = `👁️ Pagos de ${worker.nombre}`;
+    const container = document.getElementById('worker-payment-history-content');
+
+    if (payments.length === 0) {
+        container.innerHTML = `
+            <div class="card text-center" style="padding: 28px; color: var(--text-muted);">
+                <h3>Aún no hay pagos guardados para ${escapeHtml(worker.nombre)}.</h3>
+                <p>Cuando se guarde un reporte que incluya a este trabajador, aparecerá aquí.</p>
+            </div>
+        `;
+    } else {
+        const totalPaid = payments.reduce((sum, payment) => sum + (Number(payment.item.total) || 0), 0);
+        container.innerHTML = `
+            <p class="form-help" style="margin-top:0; margin-bottom:16px;">Cada fila conserva la tarifa usada al registrar ese pago, aunque la tarifa actual cambie después.</p>
+            <table class="report-table-print">
+                <thead>
+                    <tr>
+                        <th>Periodo</th>
+                        <th>Fecha de pago</th>
+                        <th>Horas</th>
+                        <th>Tarifa registrada</th>
+                        <th>Total pagado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${payments.map(({ report, item }) => `
+                        <tr>
+                            <td>${formatDateDisplay(report.fechaDesde)} al ${formatDateDisplay(report.fechaHasta)}</td>
+                            <td>${formatDateDisplay(report.fechaPago)}</td>
+                            <td>${item.horas} h ${item.minutos} min</td>
+                            <td>Bs ${formatNumber(item.pagoPorHoraRegistrado ?? item.pagoPorHora)}</td>
+                            <td><strong>${formatBs(item.total)}</strong></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div class="report-summary-footer-print">
+                <div><strong>Pagos registrados:</strong> ${payments.length}</div>
+                <div style="font-size:1.2rem; font-weight:900; color:var(--primary-orange-dark);">TOTAL PAGADO: ${formatBs(totalPaid)}</div>
+            </div>
+        `;
+    }
+
+    document.getElementById('modal-worker-payment-history').classList.add('active');
+}
+
+function closeWorkerPaymentHistoryModal() {
+    document.getElementById('modal-worker-payment-history').classList.remove('active');
 }
 
 function deleteWorker(workerId) {
@@ -841,7 +1027,7 @@ function viewSavedReport(reportId) {
                             <td>${idx + 1}</td>
                             <td><strong>${escapeHtml(t.workerNombre)}</strong></td>
                             <td>${t.horas} h ${t.minutos} min</td>
-                            <td>Bs ${formatNumber(t.pagoPorHora)}</td>
+                            <td>Bs ${formatNumber(t.pagoPorHoraRegistrado ?? t.pagoPorHora)}</td>
                             <td>${t.esFeriado ? 'Sí' : 'No'}</td>
                             <td>${formatBs(t.aumentoFeriado)}</td>
                             <td><strong>${formatBs(t.total)}</strong></td>
